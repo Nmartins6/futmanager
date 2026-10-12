@@ -94,6 +94,12 @@ async function downloadFile(endpoint: string, defaultFilename: string) {
   window.URL.revokeObjectURL(url);
 }
 
+export const isValidEmail = (email: string): boolean => {
+  if (!email) return false;
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  return emailRegex.test(email.trim());
+};
+
 export const api = {
   // Autenticação
   login: (email: string, password?: string) => request<any>('/auth/login', {
@@ -101,13 +107,13 @@ export const api = {
     body: JSON.stringify({ email, password }),
   }),
   getMe: () => request<any>('/auth/me'),
-  recoverPassword: (email: string) => request<any>('/auth/recover-password', {
+  recoverPassword: (email: string) => request<{ message: string; code?: string }>('/auth/recover-password', {
     method: 'POST',
     body: JSON.stringify({ email }),
   }),
-  resetPassword: (email: string, newPassword: string) => request<any>('/auth/reset-password', {
+  resetPassword: (email: string, code: string, newPassword: string) => request<{ message: string }>('/auth/reset-password', {
     method: 'POST',
-    body: JSON.stringify({ email, newPassword }),
+    body: JSON.stringify({ email, code, newPassword }),
   }),
 
   // Usuários / Professores

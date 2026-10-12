@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../services/api';
+import { api, isValidEmail } from '../services/api';
 import { User, Role, UserStatus } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { GeneralStatusBadge } from '../components/StatusBadge';
@@ -12,13 +12,16 @@ import {
   PowerOff,
   Shield,
   UserCheck,
-  AlertCircle
+  AlertCircle,
+  Search,
+  X
 } from 'lucide-react';
 
 export const Teachers: React.FC = () => {
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Modal Convite/Provisionamento
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -50,6 +53,12 @@ export const Teachers: React.FC = () => {
     e.preventDefault();
     setSaving(true);
     setFormError(null);
+
+    if (!isValidEmail(inviteEmail)) {
+      setFormError('Por favor, informe um formato de e-mail válido (exemplo: professor@escolinha.com).');
+      setSaving(false);
+      return;
+    }
 
     try {
       await api.inviteUser({
@@ -90,6 +99,16 @@ export const Teachers: React.FC = () => {
     }
   };
 
+  const filteredUsers = users.filter((u) => {
+    if (!searchTerm.trim()) return true;
+    const term = searchTerm.toLowerCase().trim();
+    return (
+      u.fullName.toLowerCase().includes(term) ||
+      u.email.toLowerCase().includes(term) ||
+      (u.phone && u.phone.toLowerCase().includes(term))
+    );
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -110,14 +129,41 @@ export const Teachers: React.FC = () => {
         </button>
       </div>
 
+      {/* Barra de Pesquisa de Usuários */}
+      <div className="relative">
+        <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+        <input
+          type="text"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          placeholder="Pesquisar membros por nome, e-mail ou telefone..."
+          className="w-full pl-10 pr-10 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm"
+        />
+        {searchTerm && (
+          <button
+            type="button"
+            onClick={() => setSearchTerm('')}
+            className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
       {loading ? (
         <div className="p-12 text-center text-slate-500">
           <div className="w-8 h-8 border-3 border-brand-600 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
           <p className="text-xs">Carregando equipe...</p>
         </div>
+      ) : filteredUsers.length === 0 ? (
+        <div className="bg-white border border-slate-200 rounded-2xl p-12 text-center text-slate-500">
+          <UserCog className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+          <p className="text-sm font-semibold">Nenhum membro encontrado</p>
+          <p className="text-xs text-slate-400 mt-1">Tente pesquisar com outro termo ou limpe o filtro.</p>
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {users.map((u) => {
+          {filteredUsers.map((u) => {
             const isSelf = u.id === currentUser?.id;
             const isAdminRole = u.role === 'ADMINISTRADOR';
 

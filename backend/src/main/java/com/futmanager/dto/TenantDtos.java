@@ -27,7 +27,10 @@ public class TenantDtos {
             String adminFullName,
 
             @NotBlank(message = "O e-mail do administrador é obrigatório")
-            @Email(message = "Formato de e-mail inválido")
+            @jakarta.validation.constraints.Pattern(
+                regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,7}$",
+                message = "Formato de e-mail inválido. Digite um e-mail válido como usuario@exemplo.com"
+            )
             String adminEmail,
 
             String adminPhone,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../services/api';
+import { api, isValidEmail } from '../services/api';
 import { Guardian } from '../types';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -10,7 +10,8 @@ import {
   Users,
   Plus,
   Edit2,
-  AlertCircle
+  AlertCircle,
+  X
 } from 'lucide-react';
 
 export const Guardians: React.FC = () => {
@@ -31,15 +32,27 @@ export const Guardians: React.FC = () => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    loadGuardians();
+    loadGuardians(page);
   }, [page]);
 
-  const loadGuardians = async () => {
+  // Busca instantânea com debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (page === 0) {
+        loadGuardians(0);
+      } else {
+        setPage(0);
+      }
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const loadGuardians = async (targetPage = page) => {
     setLoading(true);
     try {
       const q = new URLSearchParams();
-      if (search) q.append('query', search);
-      q.append('page', page.toString());
+      if (search.trim()) q.append('query', search.trim());
+      q.append('page', targetPage.toString());
       q.append('size', '12');
 
       const res = await api.getGuardians(q.toString());
@@ -55,7 +68,13 @@ export const Guardians: React.FC = () => {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(0);
-    loadGuardians();
+    loadGuardians(0);
+  };
+
+  const handleClearSearch = () => {
+    setSearch('');
+    setPage(0);
+    loadGuardians(0);
   };
 
   const handleOpenCreate = () => {
@@ -80,6 +99,12 @@ export const Guardians: React.FC = () => {
     e.preventDefault();
     setSaving(true);
     setFormError(null);
+
+    if (email.trim() && !isValidEmail(email)) {
+      setFormError('Por favor, informe um formato de e-mail válido (exemplo: responsavel@email.com).');
+      setSaving(false);
+      return;
+    }
 
     const payload = {
       fullName: fullName.trim(),
@@ -132,14 +157,23 @@ export const Guardians: React.FC = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Pesquisar por nome, telefone ou e-mail..."
-              className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full pl-10 pr-10 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
+            {search && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
           <button
             type="submit"
-            className="px-4 py-2 text-xs font-bold text-white bg-slate-800 rounded-xl hover:bg-slate-700"
+            className="px-4 py-2 text-xs font-bold text-white bg-slate-800 rounded-xl hover:bg-slate-700 shadow-sm"
           >
-            Pesquisar
+            Buscar
           </button>
         </form>
       </div>

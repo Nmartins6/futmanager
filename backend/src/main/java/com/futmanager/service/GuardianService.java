@@ -53,6 +53,8 @@ public class GuardianService {
             throw new ConflictException("Já existe um responsável cadastrado com o telefone: " + phone);
         }
 
+        com.futmanager.util.ValidationUtils.validateOptionalEmail(request.email(), "O e-mail do responsável");
+
         Guardian guardian = Guardian.builder()
                 .tenant(currentUser.getTenant())
                 .fullName(request.fullName().trim())
@@ -78,6 +80,8 @@ public class GuardianService {
         if (guardianRepository.existsByTenantIdAndPhoneAndIdNot(tenantId, phone, id)) {
             throw new ConflictException("Já existe outro responsável cadastrado com o telefone: " + phone);
         }
+
+        com.futmanager.util.ValidationUtils.validateOptionalEmail(request.email(), "O e-mail do responsável");
 
         guardian.setFullName(request.fullName().trim());
         guardian.setPhone(phone);

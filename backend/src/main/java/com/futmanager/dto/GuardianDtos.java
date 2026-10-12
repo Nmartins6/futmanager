@@ -17,6 +17,10 @@ public class GuardianDtos {
             @Size(max = 50, message = "O telefone não pode exceder 50 caracteres")
             String phone,
 
+            @jakarta.validation.constraints.Pattern(
+                regexp = "^$|^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,7}$",
+                message = "Formato de e-mail inválido. Digite um e-mail válido como usuario@exemplo.com"
+            )
             String email
     ) {}
 

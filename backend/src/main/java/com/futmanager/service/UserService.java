@@ -59,6 +59,7 @@ public class UserService {
     public UserResponse inviteUser(InviteUserRequest request) {
         User currentUser = getCurrentUserEntity();
         String normalizedEmail = request.email().toLowerCase().trim();
+        com.futmanager.util.ValidationUtils.validateEmail(normalizedEmail, "O e-mail do usuário");
         if (userRepository.existsByEmail(normalizedEmail)) {
             throw new BusinessException("Já existe um usuário cadastrado com este e-mail: " + normalizedEmail);
         }

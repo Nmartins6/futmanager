@@ -42,6 +42,10 @@ public class StudentDtos {
             UUID guardianId,
             String guardianFullName,
             String guardianPhone,
+            @jakarta.validation.constraints.Pattern(
+                regexp = "^$|^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,7}$",
+                message = "Formato de e-mail inválido. Digite um e-mail válido como usuario@exemplo.com"
+            )
             String guardianEmail,
             @NotBlank(message = "O parentesco/vínculo é obrigatório")
             String relationship,

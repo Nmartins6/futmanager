@@ -188,6 +188,8 @@ public class StudentService {
                 }
                 String phone = input.guardianPhone().trim();
 
+                com.futmanager.util.ValidationUtils.validateOptionalEmail(input.guardianEmail(), "O e-mail do responsável");
+
                 // Unicidade de responsável por telefone: se já existe, reutiliza o responsável para o novo aluno
                 Optional<Guardian> existingGuardian = guardianRepository.findByTenantIdAndPhone(tenant.getId(), phone);
                 if (existingGuardian.isPresent()) {

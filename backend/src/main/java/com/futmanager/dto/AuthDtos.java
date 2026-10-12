@@ -2,9 +2,9 @@ package com.futmanager.dto;
 
 import com.futmanager.domain.enums.Role;
 import com.futmanager.domain.enums.UserStatus;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 import java.util.UUID;
 
@@ -12,7 +12,10 @@ public class AuthDtos {
 
     public record LoginRequest(
             @NotBlank(message = "O e-mail é obrigatório")
-            @Email(message = "Formato de e-mail inválido")
+            @Pattern(
+                regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,7}$",
+                message = "Formato de e-mail inválido. Digite um e-mail válido como usuario@exemplo.com"
+            )
             String email,
 
             @NotBlank(message = "A senha é obrigatória")
@@ -34,7 +37,10 @@ public class AuthDtos {
 
     public record InviteUserRequest(
             @NotBlank(message = "O e-mail é obrigatório")
-            @Email(message = "Formato de e-mail inválido")
+            @Pattern(
+                regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,7}$",
+                message = "Formato de e-mail inválido. Digite um e-mail válido como usuario@exemplo.com"
+            )
             String email,
 
             @NotBlank(message = "O nome completo é obrigatório")
@@ -49,20 +55,30 @@ public class AuthDtos {
 
     public record PasswordRecoveryRequest(
             @NotBlank(message = "O e-mail é obrigatório")
-            @Email(message = "Formato de e-mail inválido")
+            @Pattern(
+                regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,7}$",
+                message = "Formato de e-mail inválido. Digite um e-mail válido como usuario@exemplo.com"
+            )
             String email
     ) {}
 
     public record ResetPasswordRequest(
             @NotBlank(message = "O e-mail é obrigatório")
-            @Email(message = "Formato de e-mail inválido")
+            @Pattern(
+                regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,7}$",
+                message = "Formato de e-mail inválido. Digite um e-mail válido como usuario@exemplo.com"
+            )
             String email,
+
+            @NotBlank(message = "O código de recuperação de 6 dígitos é obrigatório")
+            String code,
 
             @NotBlank(message = "A nova senha é obrigatória")
             String newPassword
     ) {}
 
     public record PasswordRecoveryResponse(
-            String message
+            String message,
+            String code
     ) {}
 }

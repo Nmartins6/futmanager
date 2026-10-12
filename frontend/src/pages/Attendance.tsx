@@ -15,7 +15,8 @@ import {
   Users,
   ShieldAlert,
   AlertTriangle,
-  RotateCcw
+  RotateCcw,
+  Search
 } from 'lucide-react';
 
 interface AttendancePageProps {
@@ -26,6 +27,7 @@ interface AttendancePageProps {
 export const Attendance: React.FC<AttendancePageProps> = ({ lessonId, onBack }) => {
   const [data, setData] = useState<AttendanceDetail | null>(null);
   const [items, setItems] = useState<AttendanceStudentItem[]>([]);
+  const [studentSearch, setStudentSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -333,9 +335,36 @@ export const Attendance: React.FC<AttendancePageProps> = ({ lessonId, onBack }) 
         </div>
       </div>
 
+      {/* Barra de Pesquisa Rápida de Alunos na Chamada */}
+      <div className="relative">
+        <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+        <input
+          type="text"
+          value={studentSearch}
+          onChange={(e) => setStudentSearch(e.target.value)}
+          placeholder="Filtrar aluno por nome na chamada..."
+          className="w-full pl-10 pr-10 py-2.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-xs"
+        />
+        {studentSearch && (
+          <button
+            type="button"
+            onClick={() => setStudentSearch('')}
+            className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        )}
+      </div>
+
       {/* Lista de Alunos Elegíveis com Botões Grandes para Celular */}
       <div className="space-y-3">
-        {items.map((student) => {
+        {items
+          .filter(
+            (s) =>
+              !studentSearch.trim() ||
+              s.studentName.toLowerCase().includes(studentSearch.toLowerCase().trim())
+          )
+          .map((student) => {
           const currentStatus = student.status;
 
           return (

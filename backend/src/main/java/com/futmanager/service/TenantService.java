@@ -61,6 +61,7 @@ public class TenantService {
         }
 
         String adminEmail = request.adminEmail().toLowerCase().trim();
+        com.futmanager.util.ValidationUtils.validateEmail(adminEmail, "O e-mail do administrador");
         if (userRepository.existsByEmail(adminEmail)) {
             throw new ConflictException("Já existe um usuário cadastrado com este e-mail: " + adminEmail);
         }

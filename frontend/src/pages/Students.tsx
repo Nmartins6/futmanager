@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../services/api';
+import { api, isValidEmail } from '../services/api';
 import { StudentSummary, StudentDetail, StudentStatus, SchoolClass } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { GeneralStatusBadge } from '../components/StatusBadge';
@@ -18,7 +18,8 @@ import {
   PowerOff,
   Power,
   Upload,
-  AlertCircle
+  AlertCircle,
+  X
 } from 'lucide-react';
 
 export const Students: React.FC = () => {
@@ -65,8 +66,20 @@ export const Students: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    loadStudents();
-  }, [page, statusFilter, classFilter]);
+    loadStudents(page);
+  }, [page, statusFilter, classFilter, minAge, maxAge]);
+
+  // Busca em tempo real com debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (page === 0) {
+        loadStudents(0);
+      } else {
+        setPage(0);
+      }
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const loadClasses = async () => {
     try {
@@ -77,16 +90,16 @@ export const Students: React.FC = () => {
     }
   };
 
-  const loadStudents = async () => {
+  const loadStudents = async (targetPage = page) => {
     setLoading(true);
     try {
       const q = new URLSearchParams();
-      if (search) q.append('query', search);
+      if (search.trim()) q.append('query', search.trim());
       if (statusFilter) q.append('status', statusFilter);
       if (classFilter) q.append('classId', classFilter);
       if (minAge) q.append('minAge', minAge);
       if (maxAge) q.append('maxAge', maxAge);
-      q.append('page', page.toString());
+      q.append('page', targetPage.toString());
       q.append('size', '12');
 
       const res = await api.getStudents(q.toString());
@@ -102,7 +115,13 @@ export const Students: React.FC = () => {
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setPage(0);
-    loadStudents();
+    loadStudents(0);
+  };
+
+  const handleClearSearch = () => {
+    setSearch('');
+    setPage(0);
+    loadStudents(0);
   };
 
   const handleViewDetails = async (id: string) => {
@@ -209,6 +228,12 @@ export const Students: React.FC = () => {
       return;
     }
 
+    if (guardianEmail.trim() && !isValidEmail(guardianEmail)) {
+      setFormError('O e-mail do responsável informado possui formato inválido (ex: responsavel@email.com).');
+      setFormSaving(false);
+      return;
+    }
+
     const payload: any = {
       fullName: formName.trim(),
       birthDate: formBirthDate,
@@ -278,14 +303,23 @@ export const Students: React.FC = () => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Buscar por nome do aluno ou responsável..."
-              className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full pl-10 pr-10 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
+            {search && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
           <button
             type="submit"
-            className="px-4 py-2 text-xs font-bold text-white bg-slate-800 rounded-xl hover:bg-slate-700"
+            className="px-4 py-2 text-xs font-bold text-white bg-slate-800 rounded-xl hover:bg-slate-700 shadow-sm"
           >
-            Pesquisar
+            Buscar
           </button>
         </form>
 
