@@ -1,0 +1,35 @@
+# Stage 1: Build da aplicação Java com Maven
+FROM maven:3.9-eclipse-temurin-21 AS builder
+WORKDIR /build
+
+COPY backend/pom.xml .
+# Baixar dependências para cache de camadas Docker
+RUN mvn dependency:go-offline -B || true
+
+COPY backend/src ./src
+RUN mvn clean package -DskipTests -B
+
+# Stage 2: Runtime enxuto e seguro
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+
+# Criar usuário não-root para segurança
+RUN addgroup -S futmanager && adduser -S futmanager -G futmanager
+
+# Criar pasta para uploads locais de fallback
+RUN mkdir -p /app/uploads && chown -R futmanager:futmanager /app/uploads
+
+COPY --from=builder /build/target/futmanager-api-*.jar app.jar
+RUN chown futmanager:futmanager app.jar
+
+USER futmanager
+
+EXPOSE 8080
+
+ENV SERVER_PORT=8080 \
+    TIMEZONE=America/Sao_Paulo
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:${SERVER_PORT}/api/actuator/health || exit 1
+
+ENTRYPOINT ["java", "-Duser.timezone=UTC", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]

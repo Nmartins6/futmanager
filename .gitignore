@@ -1,0 +1,35 @@
+# Git Ignore for FutManager
+
+# Environment
+.env
+.env.local
+*.env
+
+# Java / Maven
+**/target/
+**/.mvn/wrapper/maven-wrapper.jar
+**/*.class
+**/.idea/
+**/*.iml
+**/*.ipr
+**/*.iws
+**/.classpath
+**/.project
+**/.settings/
+
+# Node / Frontend
+**/node_modules/
+**/dist/
+**/.vite/
+**/coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Uploads / Storage local
+uploads/
+**/uploads/
+
+# OS
+.DS_Store
+Thumbs.db
