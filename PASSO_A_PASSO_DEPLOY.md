@@ -18,7 +18,7 @@ O sistema foi todo construído e está salvo nesta pasta do seu computador:
    C:\Workspace\futmanager
    ```
 3. Aperte **Enter** (ou clique em **OK**).
-4. O Explorador de Arquivos do Windows vai abrir exibindo todos os arquivos do sistema! Lá dentro você verá pastas como `backend`, `frontend`, manuais e um arquivo chamado `subir-para-github.bat`.
+4. O Explorador de Arquivos do Windows vai abrir exibindo todos os arquivos do sistema! Lá dentro você verá pastas como `backend`, `frontend` e manuais de uso.
 
 ---
 
@@ -56,12 +56,12 @@ O GitHub é onde o código do sistema ficará guardado na nuvem.
    ```
 
 #### Agora envie os arquivos do seu computador:
-1. Abra a pasta `C:\Workspace\futmanager` no seu computador (aquela do passo 1).
-2. Dê dois cliques no arquivo **`subir-para-github.bat`**.
-3. Uma janelinha preta vai abrir pedindo a URL.
-4. Clique com o botão direito para colar o link copiado do GitHub e aperte **Enter**.
-5. Se o GitHub pedir login no navegador, confirme.
-6. Pronto! Em instantes todos os arquivos do sistema estarão salvos no seu GitHub.
+1. Abra o terminal (Git Bash, WSL Linux ou Prompt de Comando) na pasta do projeto:
+   ```bash
+   git push -u origin main
+   ```
+2. Se o GitHub solicitar autenticação no navegador ou credenciais, confirme o acesso.
+3. Pronto! Em instantes todos os arquivos do sistema estarão salvos no seu GitHub.
 
 ---
 
