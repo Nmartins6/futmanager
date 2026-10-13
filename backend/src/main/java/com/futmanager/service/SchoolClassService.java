@@ -103,7 +103,8 @@ public class SchoolClassService {
 
     @Transactional
     public SchoolClassResponse updateClass(UUID id, SchoolClassRequest request) {
-        SchoolClass schoolClass = schoolClassRepository.findById(id)
+        User currentUser = userService.getCurrentUserEntity();
+        SchoolClass schoolClass = schoolClassRepository.findByIdAndTenantId(id, currentUser.getTenant().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Turma não encontrada com ID: " + id));
 
         schoolClass.setName(request.name().trim());
@@ -124,10 +125,13 @@ public class SchoolClassService {
 
     @Transactional
     public ClassEnrollmentDto enrollStudent(EnrollmentCreateRequest request) {
-        Student student = studentRepository.findById(request.studentId())
+        User currentUser = userService.getCurrentUserEntity();
+        UUID tenantId = currentUser.getTenant().getId();
+
+        Student student = studentRepository.findByIdAndTenantId(request.studentId(), tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado com ID: " + request.studentId()));
 
-        SchoolClass schoolClass = schoolClassRepository.findById(request.classId())
+        SchoolClass schoolClass = schoolClassRepository.findByIdAndTenantId(request.classId(), tenantId)
                 .orElseThrow(() -> new ResourceNotFoundException("Turma não encontrada com ID: " + request.classId()));
 
         validateStudentAgeForClassCategory(student, schoolClass);
@@ -159,8 +163,15 @@ public class SchoolClassService {
 
     @Transactional
     public ClassEnrollmentDto updateEnrollment(UUID enrollmentId, EnrollmentUpdateRequest request) {
+        User currentUser = userService.getCurrentUserEntity();
+        UUID tenantId = currentUser.getTenant().getId();
+
         ClassEnrollment enrollment = classEnrollmentRepository.findById(enrollmentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Vínculo não encontrado com ID: " + enrollmentId));
+
+        if (enrollment.getSchoolClass().getTenant() == null || !enrollment.getSchoolClass().getTenant().getId().equals(tenantId)) {
+            throw new ForbiddenException("Você não tem permissão para alterar matrículas desta turma.");
+        }
 
         LocalDate entryDate = request.entryDate() != null ? request.entryDate() : enrollment.getEntryDate();
         LocalDate exitDate = request.exitDate();
@@ -188,6 +199,11 @@ public class SchoolClassService {
 
     @Transactional(readOnly = true)
     public List<ClassEnrollmentDto> listEnrollmentsByClass(UUID classId) {
+        User currentUser = userService.getCurrentUserEntity();
+        SchoolClass schoolClass = schoolClassRepository.findByIdAndTenantId(classId, currentUser.getTenant().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Turma não encontrada com ID: " + classId));
+        validateTeacherAccessToClass(schoolClass);
+
         return classEnrollmentRepository.findBySchoolClassId(classId)
                 .stream()
                 .map(this::toEnrollmentDto)
@@ -204,6 +220,10 @@ public class SchoolClassService {
         for (TeacherAssignmentInput input : teacherInputs) {
             User user = userRepository.findById(input.userId())
                     .orElseThrow(() -> new ResourceNotFoundException("Professor não encontrado com ID: " + input.userId()));
+
+            if (user.getTenant() == null || !user.getTenant().getId().equals(schoolClass.getTenant().getId())) {
+                throw new BusinessException("O usuário selecionado não pertence a esta escolinha.");
+            }
 
             ClassTeacher ct = ClassTeacher.builder()
                     .schoolClass(schoolClass)

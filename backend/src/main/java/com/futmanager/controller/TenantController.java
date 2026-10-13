@@ -40,8 +40,8 @@ public class TenantController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('ADMINISTRADOR')")
-    @Operation(summary = "Listar todas as escolinhas cadastradas no SaaS")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    @Operation(summary = "Listar todas as escolinhas cadastradas no SaaS (Acesso restrito ao Super Admin)")
     public ResponseEntity<List<TenantResponse>> listAllTenants() {
         return ResponseEntity.ok(tenantService.listAllTenants());
     }

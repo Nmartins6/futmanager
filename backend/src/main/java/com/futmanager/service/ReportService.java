@@ -44,6 +44,7 @@ public class ReportService {
     private final StudentRepository studentRepository;
     private final SchoolClassRepository schoolClassRepository;
     private final UserRepository userRepository;
+    private final UserService userService;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -52,7 +53,8 @@ public class ReportService {
      */
     @Transactional(readOnly = true)
     public byte[] generateClassFrequencyPdf(UUID classId, LocalDate startDate, LocalDate endDate) {
-        SchoolClass sc = schoolClassRepository.findById(classId)
+        UUID tenantId = userService.getCurrentUserEntity().getTenant().getId();
+        SchoolClass sc = schoolClassRepository.findByIdAndTenantId(classId, tenantId)
                 .orElseThrow(() -> new BusinessException("Turma não encontrada: " + classId));
 
         List<StudentFrequencySummaryDto> studentStats = statisticsService.calculateAllStudentsFrequency(classId, startDate, endDate, null);
@@ -101,8 +103,14 @@ public class ReportService {
      */
     @Transactional(readOnly = true)
     public byte[] generateStudentIndividualPdf(UUID studentId, UUID classId, LocalDate startDate, LocalDate endDate) {
-        Student student = studentRepository.findById(studentId)
+        UUID tenantId = userService.getCurrentUserEntity().getTenant().getId();
+        Student student = studentRepository.findByIdAndTenantId(studentId, tenantId)
                 .orElseThrow(() -> new BusinessException("Aluno não encontrado: " + studentId));
+
+        if (classId != null) {
+            schoolClassRepository.findByIdAndTenantId(classId, tenantId)
+                    .orElseThrow(() -> new BusinessException("Turma não encontrada: " + classId));
+        }
 
         StudentFrequencySummaryDto summary = statisticsService.getStudentFrequency(studentId, classId, startDate, endDate);
         List<StudentAttendanceHistoryItemDto> history = statisticsService.getStudentAttendanceHistory(studentId, classId, startDate, endDate);
@@ -171,6 +179,12 @@ public class ReportService {
      */
     @Transactional(readOnly = true)
     public byte[] generateLowFrequencyPdf(UUID classId, LocalDate startDate, LocalDate endDate) {
+        UUID tenantId = userService.getCurrentUserEntity().getTenant().getId();
+        if (classId != null) {
+            schoolClassRepository.findByIdAndTenantId(classId, tenantId)
+                    .orElseThrow(() -> new BusinessException("Turma não encontrada: " + classId));
+        }
+
         List<StudentFrequencySummaryDto> allStats = statisticsService.calculateAllStudentsFrequency(classId, startDate, endDate, null);
         List<StudentFrequencySummaryDto> lowFreq = allStats.stream()
                 .filter(s -> s.belowThreshold() && s.totalLessons() > 0)
@@ -219,6 +233,12 @@ public class ReportService {
      */
     @Transactional(readOnly = true)
     public byte[] generateMonthlySummaryXlsx(UUID classId, Integer year) {
+        UUID tenantId = userService.getCurrentUserEntity().getTenant().getId();
+        if (classId != null) {
+            schoolClassRepository.findByIdAndTenantId(classId, tenantId)
+                    .orElseThrow(() -> new BusinessException("Turma não encontrada: " + classId));
+        }
+
         List<MonthlyEvolutionDto> list = statisticsService.getMonthlyEvolution(classId, year);
         SchoolConfigResponse config = schoolConfigService.getConfigs();
 

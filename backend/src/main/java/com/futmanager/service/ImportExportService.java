@@ -272,9 +272,7 @@ public class ImportExportService {
     @Transactional(readOnly = true)
     public byte[] exportStudentsCsv(String query, StudentStatus status, UUID classId) {
         UUID tenantId = userService.getCurrentUserEntity().getTenant().getId();
-        List<Student> students = studentRepository.findAll().stream()
-                .filter(s -> s.getTenant() != null && s.getTenant().getId().equals(tenantId))
-                .toList();
+        List<Student> students = studentRepository.findByTenantId(tenantId);
 
         try (ByteArrayOutputStream out = new ByteArrayOutputStream();
              OutputStreamWriter writer = new OutputStreamWriter(out, StandardCharsets.UTF_8);
@@ -314,9 +312,7 @@ public class ImportExportService {
     @Transactional(readOnly = true)
     public byte[] exportStudentsXlsx(String query, StudentStatus status, UUID classId) {
         UUID tenantId = userService.getCurrentUserEntity().getTenant().getId();
-        List<Student> students = studentRepository.findAll().stream()
-                .filter(s -> s.getTenant() != null && s.getTenant().getId().equals(tenantId))
-                .toList();
+        List<Student> students = studentRepository.findByTenantId(tenantId);
 
         try (Workbook workbook = new XSSFWorkbook();
              ByteArrayOutputStream out = new ByteArrayOutputStream()) {
@@ -498,7 +494,8 @@ public class ImportExportService {
         String duplicateReason = null;
 
         if (studentName != null && !studentName.isBlank()) {
-            List<Student> homonyms = studentRepository.findByFullNameIgnoreCase(studentName.trim());
+            UUID currentTenantId = userService.getCurrentUserEntity().getTenant().getId();
+            List<Student> homonyms = studentRepository.findByTenantIdAndFullNameIgnoreCase(currentTenantId, studentName.trim());
             if (!homonyms.isEmpty()) {
                 possibleDuplicate = true;
                 duplicateReason = String.format("Aviso: Já existe(m) %d aluno(s) cadastrado(s) com este mesmo nome.", homonyms.size());

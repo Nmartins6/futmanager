@@ -121,7 +121,8 @@ public class AttendanceService {
 
                 if (item == null) {
                     // Novo item
-                    Student student = studentRepository.findById(input.studentId())
+                    UUID tenantId = currentUser.getTenant().getId();
+                    Student student = studentRepository.findByIdAndTenantId(input.studentId(), tenantId)
                             .orElseThrow(() -> new ResourceNotFoundException("Aluno não encontrado: " + input.studentId()));
 
                     item = AttendanceItem.builder()
