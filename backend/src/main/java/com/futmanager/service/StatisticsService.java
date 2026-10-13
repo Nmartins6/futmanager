@@ -47,7 +47,7 @@ public class StatisticsService {
         List<LessonResponse> todayLessons = lessonService.getLessonsOnDate(LocalDate.now());
 
         // Pendências: Aulas marcadas como REALIZADA cuja chamada ainda não foi FINALIZADA
-        List<Lesson> pendingLessons = lessonRepository.findPendingAttendanceLessons(tenantId, null, null, null);
+        List<Lesson> pendingLessons = lessonRepository.findPendingAttendanceLessons(tenantId, null, defaultStartDate(null), defaultEndDate(null));
         if (teacherFilter != null) {
             pendingLessons = pendingLessons.stream()
                     .filter(l -> l.getSchoolClass().getTeachers().stream()
@@ -87,7 +87,8 @@ public class StatisticsService {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(() -> new IllegalArgumentException("Aluno não encontrado: " + studentId));
 
-        List<AttendanceItem> items = attendanceItemRepository.findFinalizedItemsForStudent(studentId, classId, startDate, endDate);
+        List<AttendanceItem> items = attendanceItemRepository.findFinalizedItemsForStudent(
+                studentId, classId, defaultStartDate(startDate), defaultEndDate(endDate));
 
         double threshold = schoolConfigService.getLowFrequencyThreshold();
         return buildStudentFrequencySummary(student, items, threshold);
@@ -100,7 +101,8 @@ public class StatisticsService {
     public List<StudentAttendanceHistoryItemDto> getStudentAttendanceHistory(
             UUID studentId, UUID classId, LocalDate startDate, LocalDate endDate) {
 
-        List<AttendanceItem> items = attendanceItemRepository.findFinalizedItemsForStudent(studentId, classId, startDate, endDate);
+        List<AttendanceItem> items = attendanceItemRepository.findFinalizedItemsForStudent(
+                studentId, classId, defaultStartDate(startDate), defaultEndDate(endDate));
 
         return items.stream()
                 .map(item -> {
@@ -131,7 +133,8 @@ public class StatisticsService {
         List<ClassComparisonDto> result = new ArrayList<>();
 
         for (SchoolClass sc : classes) {
-            List<AttendanceItem> items = attendanceItemRepository.findFinalizedItems(tenantId, sc.getId(), startDate, endDate);
+            List<AttendanceItem> items = attendanceItemRepository.findFinalizedItems(
+                    tenantId, sc.getId(), defaultStartDate(startDate), defaultEndDate(endDate));
 
             int presences = 0;
             int absences = 0;
@@ -232,7 +235,8 @@ public class StatisticsService {
         UUID teacherFilter = (principal != null && principal.getRole() == Role.PROFESSOR) ? principal.getId() : null;
         UUID tenantId = (principal != null) ? principal.getTenantId() : com.futmanager.config.TenantContext.getTenantId();
 
-        List<Lesson> pending = lessonRepository.findPendingAttendanceLessons(tenantId, classId, startDate, endDate);
+        List<Lesson> pending = lessonRepository.findPendingAttendanceLessons(
+                tenantId, classId, defaultStartDate(startDate), defaultEndDate(endDate));
         if (teacherFilter != null) {
             pending = pending.stream()
                     .filter(l -> l.getSchoolClass().getTeachers().stream()
@@ -251,7 +255,8 @@ public class StatisticsService {
 
         UUID tenantId = com.futmanager.config.TenantContext.getTenantId();
         List<Student> students = (tenantId != null) ? studentRepository.findByTenantId(tenantId) : studentRepository.findAll();
-        List<AttendanceItem> allItems = attendanceItemRepository.findFinalizedItems(tenantId, classId, startDate, endDate);
+        List<AttendanceItem> allItems = attendanceItemRepository.findFinalizedItems(
+                tenantId, classId, defaultStartDate(startDate), defaultEndDate(endDate));
 
         double threshold = schoolConfigService.getLowFrequencyThreshold();
 
@@ -359,5 +364,13 @@ public class StatisticsService {
         }
         double val = ((double) presences / totalCounted) * 100.0;
         return BigDecimal.valueOf(val).setScale(1, RoundingMode.HALF_UP).doubleValue();
+    }
+
+    private LocalDate defaultStartDate(LocalDate startDate) {
+        return (startDate != null) ? startDate : LocalDate.of(1970, 1, 1);
+    }
+
+    private LocalDate defaultEndDate(LocalDate endDate) {
+        return (endDate != null) ? endDate : LocalDate.of(2099, 12, 31);
     }
 }

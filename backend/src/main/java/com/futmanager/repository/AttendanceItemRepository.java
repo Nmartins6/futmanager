@@ -26,8 +26,7 @@ public interface AttendanceItemRepository extends JpaRepository<AttendanceItem, 
            "AND a.status = com.futmanager.domain.enums.AttendanceState.FINALIZADA " +
            "AND l.status = com.futmanager.domain.enums.LessonStatus.REALIZADA " +
            "AND (:classId IS NULL OR l.schoolClass.id = :classId) " +
-           "AND (:startDate IS NULL OR l.date >= :startDate) " +
-           "AND (:endDate IS NULL OR l.date <= :endDate) " +
+           "AND l.date BETWEEN :startDate AND :endDate " +
            "ORDER BY l.date ASC")
     List<AttendanceItem> findFinalizedItemsForStudent(
             @Param("studentId") UUID studentId,
@@ -43,8 +42,7 @@ public interface AttendanceItemRepository extends JpaRepository<AttendanceItem, 
            "AND l.status = com.futmanager.domain.enums.LessonStatus.REALIZADA " +
            "AND (:tenantId IS NULL OR c.tenant.id = :tenantId) " +
            "AND (:classId IS NULL OR c.id = :classId) " +
-           "AND (:startDate IS NULL OR l.date >= :startDate) " +
-           "AND (:endDate IS NULL OR l.date <= :endDate)")
+           "AND l.date BETWEEN :startDate AND :endDate")
     List<AttendanceItem> findFinalizedItems(
             @Param("tenantId") UUID tenantId,
             @Param("classId") UUID classId,

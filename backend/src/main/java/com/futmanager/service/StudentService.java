@@ -41,16 +41,9 @@ public class StudentService {
         User currentUser = userService.getCurrentUserEntity();
         UUID tenantId = currentUser.getTenant().getId();
 
-        LocalDate minBirthDate = null;
-        LocalDate maxBirthDate = null;
         LocalDate now = LocalDate.now();
-
-        if (maxAge != null) {
-            minBirthDate = now.minusYears(maxAge + 1L).plusDays(1);
-        }
-        if (minAge != null) {
-            maxBirthDate = now.minusYears(minAge);
-        }
+        LocalDate minBirthDate = (maxAge != null) ? now.minusYears(maxAge + 1L).plusDays(1) : LocalDate.of(1900, 1, 1);
+        LocalDate maxBirthDate = (minAge != null) ? now.minusYears(minAge) : LocalDate.of(2099, 12, 31);
 
         String search = (query != null && !query.isBlank()) ? "%" + query.trim().toLowerCase() + "%" : null;
         return studentRepository.searchStudents(tenantId, search, status, classId, minBirthDate, maxBirthDate, pageable)

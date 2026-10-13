@@ -48,8 +48,10 @@ public class LessonService {
         UserPrincipal principal = userService.getCurrentUserPrincipal();
         UUID teacherFilter = (principal != null && principal.getRole() == Role.PROFESSOR) ? principal.getId() : null;
         UUID tenantId = (principal != null) ? principal.getTenantId() : com.futmanager.config.TenantContext.getTenantId();
+        LocalDate start = (startDate != null) ? startDate : LocalDate.of(1970, 1, 1);
+        LocalDate end = (endDate != null) ? endDate : LocalDate.of(2099, 12, 31);
 
-        return lessonRepository.searchLessons(tenantId, classId, status, startDate, endDate, teacherFilter, pageable)
+        return lessonRepository.searchLessons(tenantId, classId, status, start, end, teacherFilter, pageable)
                 .map(this::toResponse);
     }
 

@@ -26,8 +26,7 @@ public interface StudentRepository extends JpaRepository<Student, UUID> {
            "      OR (g IS NOT NULL AND LOWER(g.fullName) LIKE :query)) " +
            "AND (:status IS NULL OR s.status = :status) " +
            "AND (:classId IS NULL OR (e.schoolClass.id = :classId AND e.status = com.futmanager.domain.enums.EnrollmentStatus.ATIVO)) " +
-           "AND (:minBirthDate IS NULL OR s.birthDate >= :minBirthDate) " +
-           "AND (:maxBirthDate IS NULL OR s.birthDate <= :maxBirthDate)")
+           "AND s.birthDate BETWEEN :minBirthDate AND :maxBirthDate)")
     Page<Student> searchStudents(
             @Param("tenantId") UUID tenantId,
             @Param("query") String query,

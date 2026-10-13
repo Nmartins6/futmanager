@@ -41,8 +41,7 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
            "AND l.status = com.futmanager.domain.enums.LessonStatus.REALIZADA " +
            "AND (a IS NULL OR a.status = com.futmanager.domain.enums.AttendanceState.RASCUNHO) " +
            "AND (:classId IS NULL OR c.id = :classId) " +
-           "AND (:startDate IS NULL OR l.date >= :startDate) " +
-           "AND (:endDate IS NULL OR l.date <= :endDate) " +
+           "AND l.date BETWEEN :startDate AND :endDate " +
            "ORDER BY l.date DESC")
     List<Lesson> findPendingAttendanceLessons(
             @Param("tenantId") UUID tenantId,
@@ -56,8 +55,7 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
            "WHERE (:tenantId IS NULL OR c.tenant.id = :tenantId) " +
            "AND (:classId IS NULL OR c.id = :classId) " +
            "AND (:status IS NULL OR l.status = :status) " +
-           "AND (:startDate IS NULL OR l.date >= :startDate) " +
-           "AND (:endDate IS NULL OR l.date <= :endDate) " +
+           "AND l.date BETWEEN :startDate AND :endDate " +
            "AND (:teacherId IS NULL OR ct.user.id = :teacherId) " +
            "ORDER BY l.date DESC, l.startTime DESC")
     Page<Lesson> searchLessons(
