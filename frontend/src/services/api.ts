@@ -1,7 +1,9 @@
 // API Client para comunicação com o backend Spring Boot do FutManager
 
 const envApiUrl = import.meta.env.VITE_API_URL;
-const BASE_URL = envApiUrl ? (envApiUrl.endsWith('/api') ? envApiUrl : `${envApiUrl.replace(/\/$/, '')}/api`) : '/api';
+const BASE_URL = envApiUrl
+  ? (envApiUrl.endsWith('/api') ? envApiUrl : `${envApiUrl.replace(/\/$/, '')}/api`)
+  : (import.meta.env.PROD ? 'https://futmanager-api.onrender.com/api' : '/api');
 
 export class ApiError extends Error {
   status: number;
@@ -40,14 +42,28 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     let details: any = null;
 
     try {
-      const data = await response.json();
-      if (data.message) errorMessage = data.message;
-      else if (data.error) errorMessage = data.error;
-      details = data.details || null;
-    } catch {
-      // Fallback para texto plano se não for JSON
       const text = await response.text();
-      if (text) errorMessage = text;
+      if (text) {
+        try {
+          const data = JSON.parse(text);
+          if (data.message) errorMessage = data.message;
+          else if (data.error) errorMessage = data.error;
+          if (data.details) details = data.details;
+          if (data.details && typeof data.details === 'object') {
+            const fieldMsgs = Object.values(data.details).join(' | ');
+            if (fieldMsgs) {
+              errorMessage = `${errorMessage}: ${fieldMsgs}`;
+            }
+          }
+        } catch {
+          // Se o corpo retornado não for JSON (ex: HTML do proxy/gateway ou texto puro)
+          errorMessage = text.startsWith('<')
+            ? `Erro ${response.status}: ${response.statusText || 'Falha na comunicação com o servidor'}`
+            : text;
+        }
+      }
+    } catch {
+      errorMessage = `Erro ${response.status}: ${response.statusText || 'Falha na requisição'}`;
     }
 
     if (response.status === 401) {
@@ -63,7 +79,16 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
     return {} as T;
   }
 
-  return response.json();
+  const text = await response.text();
+  if (!text) {
+    return {} as T;
+  }
+
+  try {
+    return JSON.parse(text) as T;
+  } catch {
+    throw new ApiError('Resposta inválida do servidor (formato não reconhecido).', response.status);
+  }
 }
 
 async function downloadFile(endpoint: string, defaultFilename: string) {

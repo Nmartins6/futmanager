@@ -28,7 +28,7 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Value("${futmanager.cors.allowed-origins:http://localhost:5173,http://localhost:3000,http://localhost:80}")
+    @Value("${futmanager.cors.allowed-origins:*}")
     private String allowedOrigins;
 
     @Bean
@@ -76,17 +76,22 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         List<String> origins = Arrays.asList(allowedOrigins.split(","));
-        if (origins.contains("*")) {
+        if (origins.contains("*") || origins.isEmpty()) {
             configuration.addAllowedOriginPattern("*");
         } else {
-            configuration.setAllowedOrigins(origins);
+            for (String origin : origins) {
+                String trimmed = origin.trim();
+                if (!trimmed.isEmpty()) {
+                    configuration.addAllowedOriginPattern(trimmed);
+                }
+            }
             configuration.addAllowedOriginPattern("https://*.vercel.app");
             configuration.addAllowedOriginPattern("https://*.onrender.com");
             configuration.addAllowedOriginPattern("http://localhost:*");
         }
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "X-Requested-With", "Origin"));
-        configuration.setExposedHeaders(List.of("Content-Disposition"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(List.of("Content-Disposition", "Authorization"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 

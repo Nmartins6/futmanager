@@ -148,17 +148,25 @@ export const Login: React.FC = () => {
         plan: onboardData.plan as any,
       });
 
-      // Salva token e usuário e redireciona imediatamente
-      localStorage.setItem('futmanager_token', res.token);
+      // Backend OnboardResponse retorna: { tenant: TenantResponse, login: LoginResponse }
+      const token = res.login?.token || res.token;
+      const admin = res.login || res.adminUser;
+      const tenant = res.tenant || {};
+
+      if (!token || !admin) {
+        throw new Error('Falha ao processar as credenciais da nova escolinha.');
+      }
+
+      localStorage.setItem('futmanager_token', token);
       localStorage.setItem('futmanager_user', JSON.stringify({
-        id: res.adminUser.id,
-        email: res.adminUser.email,
-        fullName: res.adminUser.fullName,
-        role: res.adminUser.role,
-        status: res.adminUser.status,
-        tenantId: res.tenant.id,
-        tenantName: res.tenant.name,
-        tenantSlug: res.tenant.slug,
+        id: admin.id,
+        email: admin.email,
+        fullName: admin.fullName,
+        role: admin.role || 'ADMINISTRADOR',
+        status: admin.status || 'ATIVO',
+        tenantId: tenant.id || admin.tenantId,
+        tenantName: tenant.name || admin.tenantName,
+        tenantSlug: tenant.slug || admin.tenantSlug,
         createdAt: new Date().toISOString(),
       }));
 
