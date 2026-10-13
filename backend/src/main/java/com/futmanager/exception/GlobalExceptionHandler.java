@@ -64,7 +64,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
         log.error("Erro interno inesperado no servidor: ", ex);
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Ocorreu um erro interno no servidor. Tente novamente mais tarde.", null);
+        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Ocorreu um erro interno no servidor: " + ex.getMessage(), ex.getClass().getName());
     }
 
     private ResponseEntity<Map<String, Object>> buildResponse(HttpStatus status, String message, Object details) {
