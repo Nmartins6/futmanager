@@ -37,4 +37,26 @@ class StudentAndSecurityRulesTest {
         assertEquals("'-SUM(A1:A10)", importExportService.sanitizeForFormulaInjection("-SUM(A1:A10)"));
         assertEquals("'@SUM(A1:A10)", importExportService.sanitizeForFormulaInjection("@SUM(A1:A10)"));
     }
+
+    @Test
+    @DisplayName("Deve bloquear tentativa de Path Traversal no carregamento de recursos")
+    void testPathTraversalPrevention() {
+        StorageService storageService = new StorageService("./uploads", "local");
+        com.futmanager.exception.BusinessException ex = assertThrows(
+                com.futmanager.exception.BusinessException.class,
+                () -> storageService.loadAsResource("../../etc/passwd")
+        );
+        assertTrue(ex.getMessage().contains("Acesso negado") || ex.getMessage().contains("não encontrado"));
+    }
+
+    @Test
+    @DisplayName("Validação estrita de e-mail deve aceitar formatos válidos e rejeitar inválidos")
+    void testEmailValidation() {
+        assertTrue(com.futmanager.util.ValidationUtils.isValidEmail("admin@futmanager.com"));
+        assertTrue(com.futmanager.util.ValidationUtils.isValidEmail("user.name+tag@sub.domain.co"));
+        assertFalse(com.futmanager.util.ValidationUtils.isValidEmail("invalid-email"));
+        assertFalse(com.futmanager.util.ValidationUtils.isValidEmail("@missinguser.com"));
+        assertFalse(com.futmanager.util.ValidationUtils.isValidEmail("user@"));
+        assertFalse(com.futmanager.util.ValidationUtils.isValidEmail(null));
+    }
 }

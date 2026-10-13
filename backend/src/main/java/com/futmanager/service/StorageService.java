@@ -90,7 +90,10 @@ public class StorageService {
      */
     public Resource loadAsResource(String filename) {
         try {
-            Path file = rootLocation.resolve(filename).normalize();
+            Path file = rootLocation.resolve(filename).normalize().toAbsolutePath();
+            if (!file.startsWith(this.rootLocation.toAbsolutePath())) {
+                throw new BusinessException("Acesso negado ao arquivo solicitado.");
+            }
             Resource resource = new UrlResource(file.toUri());
             if (resource.exists() && resource.isReadable()) {
                 return resource;

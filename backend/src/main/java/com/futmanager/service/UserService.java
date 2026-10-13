@@ -64,6 +64,12 @@ public class UserService {
             throw new BusinessException("Já existe um usuário cadastrado com este e-mail: " + normalizedEmail);
         }
 
+        if (request.password() != null && !request.password().isBlank()) {
+            if (request.password().trim().length() < 6) {
+                throw new BusinessException("A senha inicial deve ter no mínimo 6 caracteres.");
+            }
+        }
+
         String rawPassword = (request.password() != null && !request.password().isBlank())
                 ? request.password().trim()
                 : "admin123";

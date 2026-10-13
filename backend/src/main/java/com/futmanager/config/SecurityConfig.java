@@ -42,12 +42,12 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/auth/**",
                                 "/tenants/onboard",
-                                "/photos/**",
                                 "/actuator/health",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/photos/**").permitAll()
                         // Gestão de usuários e configurações restrita a Administradores
                         .requestMatchers("/users/**").hasRole("ADMINISTRADOR")
                         .requestMatchers(HttpMethod.POST, "/configs/**").hasRole("ADMINISTRADOR")

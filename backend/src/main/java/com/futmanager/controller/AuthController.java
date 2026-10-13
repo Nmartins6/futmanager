@@ -30,9 +30,12 @@ public class AuthController {
     private final UserService userService;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
 
+    @org.springframework.beans.factory.annotation.Value("${futmanager.auth.mode:dev}")
+    private String authMode;
+
     private static final java.util.concurrent.ConcurrentHashMap<String, PasswordResetToken> resetTokens = new java.util.concurrent.ConcurrentHashMap<>();
 
-    private record PasswordResetToken(String code, java.time.Instant expiresAt) {}
+    private record PasswordResetToken(String code, java.time.Instant expiresAt, java.util.concurrent.atomic.AtomicInteger attempts) {}
 
     @PostMapping("/login")
     @Operation(summary = "Login no sistema com validação de senha segura")
@@ -103,13 +106,16 @@ public class AuthController {
 
         // Gera código numérico seguro de 6 dígitos
         String code = String.format("%06d", new java.security.SecureRandom().nextInt(1_000_000));
-        resetTokens.put(email, new PasswordResetToken(code, java.time.Instant.now().plus(15, java.time.temporal.ChronoUnit.MINUTES)));
+        resetTokens.put(email, new PasswordResetToken(code, java.time.Instant.now().plus(15, java.time.temporal.ChronoUnit.MINUTES), new java.util.concurrent.atomic.AtomicInteger(0)));
 
-        log.info("Código de recuperação gerado para {}: {}", email, code);
+        log.info("Código de recuperação gerado para a conta: {}", email);
+
+        // Só expõe o código no payload de resposta caso esteja em modo dev de demonstração
+        String responseCode = "dev".equalsIgnoreCase(authMode) ? code : null;
 
         return ResponseEntity.ok(new PasswordRecoveryResponse(
                 "Código de verificação de 6 dígitos gerado com sucesso! Válido por 15 minutos.",
-                code
+                responseCode
         ));
     }
 
@@ -126,6 +132,12 @@ public class AuthController {
         PasswordResetToken token = resetTokens.get(email);
         if (token == null || token.expiresAt().isBefore(java.time.Instant.now())) {
             throw new BusinessException("Código de recuperação inválido ou expirado. Solicite um novo código.");
+        }
+
+        // Prevenção contra força bruta: limite de 5 tentativas antes de invalidar o código
+        if (token.attempts().incrementAndGet() > 5) {
+            resetTokens.remove(email);
+            throw new BusinessException("Número excessivo de tentativas incorretas. O código foi invalidado por segurança. Solicite um novo código.");
         }
 
         if (request.code() == null || !token.code().equals(request.code().trim())) {
