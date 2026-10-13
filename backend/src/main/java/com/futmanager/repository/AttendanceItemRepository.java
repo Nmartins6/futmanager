@@ -23,8 +23,8 @@ public interface AttendanceItemRepository extends JpaRepository<AttendanceItem, 
            "JOIN ai.attendance a " +
            "JOIN a.lesson l " +
            "WHERE ai.student.id = :studentId " +
-           "AND a.status = 'FINALIZADA' " +
-           "AND l.status = 'REALIZADA' " +
+           "AND a.status = com.futmanager.domain.enums.AttendanceState.FINALIZADA " +
+           "AND l.status = com.futmanager.domain.enums.LessonStatus.REALIZADA " +
            "AND (:classId IS NULL OR l.schoolClass.id = :classId) " +
            "AND (:startDate IS NULL OR l.date >= :startDate) " +
            "AND (:endDate IS NULL OR l.date <= :endDate) " +
@@ -39,8 +39,8 @@ public interface AttendanceItemRepository extends JpaRepository<AttendanceItem, 
            "JOIN ai.attendance a " +
            "JOIN a.lesson l " +
            "JOIN l.schoolClass c " +
-           "WHERE a.status = 'FINALIZADA' " +
-           "AND l.status = 'REALIZADA' " +
+           "WHERE a.status = com.futmanager.domain.enums.AttendanceState.FINALIZADA " +
+           "AND l.status = com.futmanager.domain.enums.LessonStatus.REALIZADA " +
            "AND (:tenantId IS NULL OR c.tenant.id = :tenantId) " +
            "AND (:classId IS NULL OR c.id = :classId) " +
            "AND (:startDate IS NULL OR l.date >= :startDate) " +

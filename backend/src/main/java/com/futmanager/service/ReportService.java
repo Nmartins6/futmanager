@@ -270,7 +270,8 @@ public class ReportService {
 
             workbook.write(out);
             return out.toByteArray();
-        } catch (IOException e) {
+        } catch (Exception e) {
+            log.error("Erro ao gerar relatório XLSX mensal: ", e);
             throw new BusinessException("Erro ao gerar relatório XLSX mensal.");
         }
     }

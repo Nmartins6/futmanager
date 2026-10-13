@@ -38,8 +38,8 @@ public interface LessonRepository extends JpaRepository<Lesson, UUID> {
            "JOIN l.schoolClass c " +
            "LEFT JOIN l.attendance a " +
            "WHERE (:tenantId IS NULL OR c.tenant.id = :tenantId) " +
-           "AND l.status = 'REALIZADA' " +
-           "AND (a IS NULL OR a.status = 'RASCUNHO') " +
+           "AND l.status = com.futmanager.domain.enums.LessonStatus.REALIZADA " +
+           "AND (a IS NULL OR a.status = com.futmanager.domain.enums.AttendanceState.RASCUNHO) " +
            "AND (:classId IS NULL OR c.id = :classId) " +
            "AND (:startDate IS NULL OR l.date >= :startDate) " +
            "AND (:endDate IS NULL OR l.date <= :endDate) " +

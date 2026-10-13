@@ -25,7 +25,7 @@ public interface StudentRepository extends JpaRepository<Student, UUID> {
            "AND (:query IS NULL OR :query = '' OR LOWER(s.fullName) LIKE :query " +
            "      OR (g IS NOT NULL AND LOWER(g.fullName) LIKE :query)) " +
            "AND (:status IS NULL OR s.status = :status) " +
-           "AND (:classId IS NULL OR (e.schoolClass.id = :classId AND e.status = 'ATIVO')) " +
+           "AND (:classId IS NULL OR (e.schoolClass.id = :classId AND e.status = com.futmanager.domain.enums.EnrollmentStatus.ATIVO)) " +
            "AND (:minBirthDate IS NULL OR s.birthDate >= :minBirthDate) " +
            "AND (:maxBirthDate IS NULL OR s.birthDate <= :maxBirthDate)")
     Page<Student> searchStudents(
