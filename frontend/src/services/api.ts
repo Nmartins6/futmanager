@@ -1,9 +1,24 @@
 // API Client para comunicação com o backend Spring Boot do FutManager
 
-const envApiUrl = import.meta.env.VITE_API_URL;
-const BASE_URL = envApiUrl
-  ? (envApiUrl.endsWith('/api') ? envApiUrl : `${envApiUrl.replace(/\/$/, '')}/api`)
-  : '/api';
+function resolveBaseUrl(raw?: string): string {
+  // Na Vercel ou produção web, sempre utiliza o proxy relativo /api (evita CORS e 405)
+  if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
+    return '/api';
+  }
+
+  if (!raw) return '/api';
+
+  // Se o usuário colou texto do painel do Render ("Available at your primary URL https://..."), extrai a URL limpa
+  const match = raw.match(/https?:\/\/[^\s"']+/);
+  if (match) {
+    const url = match[0].replace(/\/$/, '');
+    return url.endsWith('/api') ? url : `${url}/api`;
+  }
+
+  return '/api';
+}
+
+const BASE_URL = resolveBaseUrl(import.meta.env.VITE_API_URL);
 
 export class ApiError extends Error {
   status: number;
