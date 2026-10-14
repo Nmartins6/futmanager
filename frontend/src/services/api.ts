@@ -3,7 +3,7 @@
 const envApiUrl = import.meta.env.VITE_API_URL;
 const BASE_URL = envApiUrl
   ? (envApiUrl.endsWith('/api') ? envApiUrl : `${envApiUrl.replace(/\/$/, '')}/api`)
-  : (import.meta.env.PROD ? 'https://futmanager-api.onrender.com/api' : '/api');
+  : '/api';
 
 export class ApiError extends Error {
   status: number;

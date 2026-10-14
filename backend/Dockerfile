@@ -3,13 +3,14 @@
 FROM maven:3.9.9-eclipse-temurin-21-alpine AS build
 WORKDIR /app
 
-# Copia pom.xml e faz download das dependências (cache eficiente de camadas)
-COPY pom.xml .
-RUN mvn dependency:go-offline -B
+ENV MAVEN_OPTS="-Xmx384m -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -Dorg.slf4j.simpleLogger.defaultLogLevel=warn"
 
-# Copia código-fonte e compila JAR de produção
+# Copia pom.xml e código-fonte
+COPY pom.xml .
 COPY src ./src
-RUN mvn clean package -DskipTests
+
+# Compila o JAR de produção sem testes (otimizado para ambientes com pouca memória como Render Free)
+RUN mvn clean package -DskipTests -B
 
 # Estágio 2: Imagem de Produção leve (JRE 21 Alpine ~150MB)
 FROM eclipse-temurin:21-jre-alpine
