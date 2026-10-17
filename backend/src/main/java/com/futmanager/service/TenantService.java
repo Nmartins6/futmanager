@@ -38,6 +38,8 @@ public class TenantService {
     private final SchoolConfigRepository schoolConfigRepository;
     private final JwtService jwtService;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private final SecurityTokenService securityTokenService;
+    private final EmailService emailService;
 
     @Transactional
     public OnboardResponse onboardSchool(TenantOnboardRequest request) {
@@ -97,9 +99,13 @@ public class TenantService {
                 .status(UserStatus.ATIVO)
                 .phone(request.adminPhone() != null ? request.adminPhone().trim() : null)
                 .passwordHash(passwordEncoder.encode(rawPassword))
+                .emailVerified(false)
                 .build();
 
         adminUser = userRepository.save(adminUser);
+
+        String verificationToken = securityTokenService.createEmailVerificationToken(adminUser);
+        emailService.sendEmailVerification(adminUser.getEmail(), adminUser.getFullName(), verificationToken);
 
         // 3. Criar configurações iniciais da escolinha
         createInitialConfig(tenant, "school_name", tenant.getName(), "Nome da escolinha");
@@ -119,7 +125,8 @@ public class TenantService {
                 adminUser.getEmail(),
                 adminUser.getRole().name(),
                 tenant.getId(),
-                tenant.getSlug()
+                tenant.getSlug(),
+                adminUser.getTokenVersion()
         );
 
         LoginResponse login = new LoginResponse(
@@ -132,7 +139,8 @@ public class TenantService {
                 tenant.getId(),
                 tenant.getName(),
                 tenant.getSlug(),
-                tenant.getPlan().name()
+                tenant.getPlan().name(),
+                adminUser.isEmailVerified()
         );
 
         return new OnboardResponse(toResponse(tenant), login);

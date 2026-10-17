@@ -57,6 +57,10 @@ futmanager:
   default-timezone: ${TIMEZONE:America/Sao_Paulo}
   lesson-horizon-days: ${LESSON_HORIZON_DAYS:30}
   low-frequency-threshold: ${LOW_FREQ_THRESHOLD:75.0}
+  frontend-url: ${APP_FRONTEND_URL:http://localhost:5173}
+  security:
+    password-reset-token-validity-minutes: ${PASSWORD_RESET_VALIDITY_MINUTES:15}
+    email-verification-token-validity-hours: ${EMAIL_VERIFICATION_VALIDITY_HOURS:24}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
   auth:
@@ -71,6 +75,11 @@ futmanager:
       url: ${SUPABASE_URL:http://localhost:8000}
       anon-key: ${SUPABASE_ANON_KEY:dev-anon-key}
       bucket: ${SUPABASE_STORAGE_BUCKET:student-photos}
+
+# Provedor Transacional de E-mail (Resend)
+resend:
+  api-key: ${RESEND_API_KEY:}
+  from-email: ${RESEND_FROM_EMAIL:FutManager <onboarding@resend.dev>}
 
 # Documentação OpenAPI
 springdoc:

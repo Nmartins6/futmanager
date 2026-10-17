@@ -60,6 +60,7 @@ export interface User {
   tenantId?: string;
   tenantName?: string;
   tenantSlug?: string;
+  emailVerified?: boolean;
   createdAt: string;
 }
 

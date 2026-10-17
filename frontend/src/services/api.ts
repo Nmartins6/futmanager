@@ -141,19 +141,34 @@ export const isValidEmail = (email: string): boolean => {
 };
 
 export const api = {
-  // Autenticação
+  // Autenticação, Verificação de E-mail e Recuperação de Senha
   login: (email: string, password?: string) => request<any>('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   }),
   getMe: () => request<any>('/auth/me'),
-  recoverPassword: (email: string) => request<{ message: string; code?: string }>('/auth/recover-password', {
+  forgotPassword: (email: string) => request<{ message: string }>('/auth/forgot-password', {
     method: 'POST',
     body: JSON.stringify({ email }),
   }),
-  resetPassword: (email: string, code: string, newPassword: string) => request<{ message: string }>('/auth/reset-password', {
+  recoverPassword: (email: string) => request<{ message: string; code?: string }>('/auth/forgot-password', {
     method: 'POST',
-    body: JSON.stringify({ email, code, newPassword }),
+    body: JSON.stringify({ email }),
+  }),
+  validateResetToken: (token: string) => request<{ valid: boolean; email: string; message: string }>(
+    `/auth/validate-reset-token?token=${encodeURIComponent(token)}`
+  ),
+  resetPasswordWithToken: (token: string, newPassword: string) => request<{ message: string }>('/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ token, newPassword }),
+  }),
+  verifyEmail: (token: string) => request<{ message: string }>('/auth/verify-email', {
+    method: 'POST',
+    body: JSON.stringify({ token }),
+  }),
+  resendVerification: (email: string) => request<{ message: string }>('/auth/resend-verification', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
   }),
 
   // Usuários / Professores

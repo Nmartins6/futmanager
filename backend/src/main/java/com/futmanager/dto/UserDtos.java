@@ -17,8 +17,21 @@ public class UserDtos {
             Role role,
             UserStatus status,
             String phone,
-            Instant createdAt
-    ) {}
+            Instant createdAt,
+            boolean emailVerified
+    ) {
+        public UserResponse(
+                UUID id,
+                String email,
+                String fullName,
+                Role role,
+                UserStatus status,
+                String phone,
+                Instant createdAt
+        ) {
+            this(id, email, fullName, role, status, phone, createdAt, false);
+        }
+    }
 
     public record UserUpdateRequest(
             @NotBlank(message = "O nome completo é obrigatório")

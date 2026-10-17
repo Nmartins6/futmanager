@@ -27,6 +27,8 @@ public class UserPrincipal implements UserDetails {
     private final UUID tenantId;
     private final String tenantName;
     private final String tenantSlug;
+    private final boolean emailVerified;
+    private final Integer tokenVersion;
 
     public static UserPrincipal fromUser(User user) {
         return UserPrincipal.builder()
@@ -38,6 +40,8 @@ public class UserPrincipal implements UserDetails {
                 .tenantId(user.getTenant() != null ? user.getTenant().getId() : null)
                 .tenantName(user.getTenant() != null ? user.getTenant().getName() : null)
                 .tenantSlug(user.getTenant() != null ? user.getTenant().getSlug() : null)
+                .emailVerified(user.isEmailVerified())
+                .tokenVersion(user.getTokenVersion() != null ? user.getTokenVersion() : 1)
                 .build();
     }
 

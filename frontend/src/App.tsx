@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useAuth } from './context/AuthContext';
 import { Layout } from './components/Layout';
 import { Login } from './pages/Login';
+import { ResetPassword } from './pages/ResetPassword';
+import { VerifyEmail } from './pages/VerifyEmail';
 import { Dashboard } from './pages/Dashboard';
 import { Attendance } from './pages/Attendance';
 import { Students } from './pages/Students';
@@ -18,6 +20,39 @@ export const App: React.FC = () => {
   const { user, loading, isAdmin } = useAuth();
   const [currentPage, setCurrentPage] = useState<string>('dashboard');
   const [pageParams, setPageParams] = useState<any>({});
+  const [pathname, setPathname] = useState<string>(() => window.location.pathname);
+
+  const searchParams = new URLSearchParams(window.location.search);
+  const urlToken = searchParams.get('token') || '';
+
+  const clearAuthRoute = () => {
+    window.history.replaceState({}, document.title, '/');
+    setPathname('/');
+  };
+
+  if (pathname === '/reset-password') {
+    return (
+      <ResetPassword
+        token={urlToken}
+        onBackToLogin={() => {
+          clearAuthRoute();
+          window.location.href = '/';
+        }}
+      />
+    );
+  }
+
+  if (pathname === '/verify-email') {
+    return (
+      <VerifyEmail
+        token={urlToken}
+        onContinue={() => {
+          clearAuthRoute();
+          window.location.href = '/';
+        }}
+      />
+    );
+  }
 
   const handleNavigate = (page: string, params: any = {}) => {
     // Validação de acesso de permissão no frontend

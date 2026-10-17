@@ -195,10 +195,21 @@ export const Teachers: React.FC = () => {
                   </div>
 
                   <div className="space-y-1.5 text-xs text-slate-600 pt-2 border-t border-slate-100">
-                    <p className="flex items-center gap-2 truncate">
-                      <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                      <span>{u.email}</span>
-                    </p>
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="flex items-center gap-2 truncate">
+                        <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="truncate">{u.email}</span>
+                      </p>
+                      <span
+                        className={`text-[10px] font-semibold px-1.5 py-0.5 rounded shrink-0 ${
+                          u.emailVerified
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            : 'bg-amber-50 text-amber-700 border border-amber-200'
+                        }`}
+                      >
+                        {u.emailVerified ? 'Verificado' : 'E-mail pendente'}
+                      </span>
+                    </div>
                     {u.phone && (
                       <p className="flex items-center gap-2">
                         <Phone className="w-3.5 h-3.5 text-slate-400 shrink-0" />

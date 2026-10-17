@@ -68,6 +68,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             return;
                         }
 
+                        // Validação de revogação de sessão (ex: senha alterada)
+                        Object tvClaim = claims.get("token_version");
+                        if (tvClaim instanceof Number tvNumber) {
+                            int tokenVersion = tvNumber.intValue();
+                            int currentVersion = user.getTokenVersion() != null ? user.getTokenVersion() : 1;
+                            if (tokenVersion != currentVersion) {
+                                log.warn("Sessão revogada para usuário {}: versão do token ({}) incompatível com a versão atual ({})",
+                                        user.getEmail(), tokenVersion, currentVersion);
+                                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                response.setContentType("application/json;charset=UTF-8");
+                                response.getWriter().write("{\"error\":\"Sessão expirada ou senha alterada. Por favor, faça login novamente.\"}");
+                                return;
+                            }
+                        }
+
                         // Vincular o tenant do usuário ao contexto da requisição
                         if (user.getTenant() != null) {
                             TenantContext.setTenantId(user.getTenant().getId());

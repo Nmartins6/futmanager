@@ -39,6 +39,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             tenantId: profile.tenantId,
             tenantName: profile.tenantName,
             tenantSlug: profile.tenantSlug,
+            emailVerified: profile.emailVerified,
             createdAt: new Date().toISOString(),
           });
         } catch (e) {
@@ -67,6 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       tenantId: res.tenantId,
       tenantName: res.tenantName,
       tenantSlug: res.tenantSlug,
+      emailVerified: res.emailVerified,
       createdAt: new Date().toISOString(),
     };
     setUser(loggedUser);

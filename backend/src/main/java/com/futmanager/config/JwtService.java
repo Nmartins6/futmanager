@@ -64,6 +64,10 @@ public class JwtService {
     }
 
     public String generateDevToken(UUID userId, String email, String role, UUID tenantId, String tenantSlug) {
+        return generateDevToken(userId, email, role, tenantId, tenantSlug, 1);
+    }
+
+    public String generateDevToken(UUID userId, String email, String role, UUID tenantId, String tenantSlug, Integer tokenVersion) {
         long expirationMillis = 1000L * 60 * 60 * 24 * 7; // 7 dias
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expirationMillis);
@@ -72,6 +76,7 @@ public class JwtService {
                 .subject(userId != null ? userId.toString() : email)
                 .claim("email", email)
                 .claim("role", role)
+                .claim("token_version", tokenVersion != null ? tokenVersion : 1)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .issuer("futmanager-auth");

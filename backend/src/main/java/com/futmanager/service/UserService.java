@@ -28,6 +28,8 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final org.springframework.security.crypto.password.PasswordEncoder passwordEncoder;
+    private final SecurityTokenService securityTokenService;
+    private final EmailService emailService;
 
     @Transactional(readOnly = true)
     public Page<UserResponse> listUsers(String query, Role role, UserStatus status, Pageable pageable) {
@@ -82,9 +84,14 @@ public class UserService {
                 .status(UserStatus.ATIVO)
                 .phone(request.phone())
                 .passwordHash(passwordEncoder.encode(rawPassword))
+                .emailVerified(false)
                 .build();
 
         user = userRepository.save(user);
+
+        String verificationToken = securityTokenService.createEmailVerificationToken(user);
+        emailService.sendEmailVerification(user.getEmail(), user.getFullName(), verificationToken);
+
         log.info("Novo usuário provisionado para escolinha {}: {} ({})",
                 currentUser.getTenant().getName(), user.getEmail(), user.getRole());
         return toResponse(user);
@@ -154,7 +161,8 @@ public class UserService {
                 user.getRole(),
                 user.getStatus(),
                 user.getPhone(),
-                user.getCreatedAt()
+                user.getCreatedAt(),
+                user.isEmailVerified()
         );
     }
 }
