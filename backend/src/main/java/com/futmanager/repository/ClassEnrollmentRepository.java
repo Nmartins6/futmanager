@@ -28,18 +28,20 @@ public interface ClassEnrollmentRepository extends JpaRepository<ClassEnrollment
            "AND (e.exitDate IS NULL OR e.exitDate >= :date)")
     List<ClassEnrollment> findEligibleEnrollmentsOnDate(@Param("classId") UUID classId, @Param("date") LocalDate date);
 
-    @Query("SELECT e FROM ClassEnrollment e " +
-           "WHERE e.student.id = :studentId " +
-           "AND e.schoolClass.id = :classId " +
-           "AND (:excludeId IS NULL OR e.id <> :excludeId) " +
-           "AND (e.entryDate <= :newExitDate OR :newExitDate IS NULL) " +
-           "AND (e.exitDate >= :newEntryDate OR e.exitDate IS NULL)")
-    List<ClassEnrollment> findOverlappingEnrollments(
-            @Param("studentId") UUID studentId,
-            @Param("classId") UUID classId,
-            @Param("newEntryDate") LocalDate newEntryDate,
-            @Param("newExitDate") LocalDate newExitDate,
-            @Param("excludeId") UUID excludeId);
+    List<ClassEnrollment> findByStudentIdAndSchoolClassId(UUID studentId, UUID classId);
+
+    default List<ClassEnrollment> findOverlappingEnrollments(
+            UUID studentId,
+            UUID classId,
+            LocalDate newEntryDate,
+            LocalDate newExitDate,
+            UUID excludeId) {
+        return findByStudentIdAndSchoolClassId(studentId, classId).stream()
+                .filter(e -> excludeId == null || !e.getId().equals(excludeId))
+                .filter(e -> newExitDate == null || !e.getEntryDate().isAfter(newExitDate))
+                .filter(e -> e.getExitDate() == null || !e.getExitDate().isBefore(newEntryDate))
+                .toList();
+    }
 
     Optional<ClassEnrollment> findFirstByStudentIdAndSchoolClassIdAndStatus(UUID studentId, UUID classId, EnrollmentStatus status);
 }
